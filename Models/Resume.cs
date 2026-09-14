@@ -2,8 +2,7 @@ namespace cv_api.Models;
 
 public class Resume
 {
-    public required string Id { get; set; }
-    public int Version { get; set; }
+    public string? Id { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public required string Name { get; set; }

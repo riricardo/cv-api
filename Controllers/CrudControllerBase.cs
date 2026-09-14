@@ -28,6 +28,11 @@ public abstract class CrudControllerBase<T> : ControllerBase
         CancellationToken cancellationToken
     )
     {
+        if (!DocumentId.IsValid(id))
+        {
+            return BadRequest(new { message = "Id must be a valid GUID." });
+        }
+
         var document = await repository.GetByIdAsync(id, cancellationToken);
 
         return document is null ? NotFound() : Ok(document);
@@ -41,7 +46,16 @@ public abstract class CrudControllerBase<T> : ControllerBase
         CancellationToken cancellationToken
     )
     {
-        var id = DocumentId.Get(document);
+        string id;
+
+        try
+        {
+            id = DocumentId.CreateIfMissing(document);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return BadRequest(new { message = exception.Message });
+        }
 
         if (await repository.ExistsByIdAsync(id, cancellationToken))
         {
@@ -62,11 +76,31 @@ public abstract class CrudControllerBase<T> : ControllerBase
         CancellationToken cancellationToken
     )
     {
-        var documentId = DocumentId.Get(document);
+        if (!DocumentId.IsValid(id))
+        {
+            return BadRequest(new { message = "Id must be a valid GUID." });
+        }
+
+        string documentId;
+
+        try
+        {
+            documentId = DocumentId.Get(document);
+        }
+        catch (InvalidOperationException)
+        {
+            DocumentId.Set(document, id);
+            documentId = id;
+        }
 
         if (!string.Equals(id, documentId, StringComparison.Ordinal))
         {
             return BadRequest(new { message = "Route id must match document Id." });
+        }
+
+        if (!DocumentId.IsValid(documentId))
+        {
+            return BadRequest(new { message = "Document Id must be a valid GUID." });
         }
 
         var updated = await repository.UpdateAsync(id, document, cancellationToken);
@@ -82,6 +116,11 @@ public abstract class CrudControllerBase<T> : ControllerBase
         CancellationToken cancellationToken
     )
     {
+        if (!DocumentId.IsValid(id))
+        {
+            return BadRequest(new { message = "Id must be a valid GUID." });
+        }
+
         var deleted = await repository.DeleteAsync(id, cancellationToken);
 
         return deleted ? NoContent() : NotFound();
