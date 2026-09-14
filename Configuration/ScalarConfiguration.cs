@@ -1,5 +1,7 @@
 using Scalar.AspNetCore;
 
+namespace cv_api.Configuration;
+
 public static class ScalarConfiguration
 {
     public static void Configure(ScalarOptions options)

@@ -13,7 +13,7 @@ public class CvApiClient : IDisposable
         {
             BaseAddress = new Uri(baseUrl)
         };
-        _httpClient.DefaultRequestHeaders.Add("master_key", masterKey);
+        _httpClient.DefaultRequestHeaders.Add("X-MASTER-KEY", masterKey);
     }
 
     public async Task<MigrationItemResult> CreateAsync<T>(

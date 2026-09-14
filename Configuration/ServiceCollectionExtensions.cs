@@ -10,10 +10,12 @@ namespace cv_api.Configuration;
 public static class ServiceCollectionExtensions
 {
     private const string MasterKeySecurityScheme = "MasterKey";
-    private const string MasterKeyHeaderName = "master_key";
+    private const string MasterKeyHeaderName = "X-MASTER-KEY";
 
     public static IServiceCollection AddAppServices(this IServiceCollection services)
     {
+        services.Configure<ForwardedHeadersOptions>(ForwardedHeadersConfiguration.Configure);
+
         services.AddOpenApi(options =>
         {
             options.AddDocumentTransformer((document, context, cancellationToken) =>

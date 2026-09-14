@@ -6,8 +6,10 @@ builder.Services.AddAppServices();
 
 var app = builder.Build();
 
-app.MapAppRoutes();
+app.UseForwardedHeaders();
 
 app.UseHttpsRedirection();
+
+app.MapAppRoutes();
 
 app.Run();

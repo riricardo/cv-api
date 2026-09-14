@@ -6,8 +6,6 @@ namespace cv_api.Auth;
 
 public class MasterKeyAuthorizationFilter : IAuthorizationFilter
 {
-    private const string HeaderName = "master_key";
-
     private readonly IConfiguration _configuration;
 
     public MasterKeyAuthorizationFilter(IConfiguration configuration)
@@ -17,7 +15,7 @@ public class MasterKeyAuthorizationFilter : IAuthorizationFilter
 
     public void OnAuthorization(AuthorizationFilterContext context)
     {
-        var masterKey = context.HttpContext.Request.Headers[HeaderName].ToString();
+        var masterKey = context.HttpContext.Request.Headers["X-MASTER-KEY"].ToString();
         var masterKeyHash = _configuration["MASTER_KEY"];
 
         if (string.IsNullOrWhiteSpace(masterKeyHash))
