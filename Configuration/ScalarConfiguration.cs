@@ -14,5 +14,8 @@ public static class ScalarConfiguration
         options.ShowSidebar = false;
         options.Title = "CV API";
         options.Layout = ScalarLayout.Classic;
+        options
+            .EnablePersistentAuthentication()
+            .AddPreferredSecuritySchemes("MasterKey");
     }
 }

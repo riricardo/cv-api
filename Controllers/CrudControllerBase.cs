@@ -62,6 +62,8 @@ public abstract class CrudControllerBase<T> : ControllerBase
             return Conflict(new CreateDocumentResult(id, "ignored"));
         }
 
+        DocumentTimestamps.SetCreated(document, DateTime.UtcNow);
+
         await repository.CreateAsync(document, cancellationToken);
 
         return Created($"{Request.Path}/{id}", new CreateDocumentResult(id, "inserted"));
@@ -102,6 +104,15 @@ public abstract class CrudControllerBase<T> : ControllerBase
         {
             return BadRequest(new { message = "Document Id must be a valid GUID." });
         }
+
+        var currentDocument = await repository.GetByIdAsync(id, cancellationToken);
+
+        if (currentDocument is null)
+        {
+            return NotFound();
+        }
+
+        DocumentTimestamps.SetUpdated(document, currentDocument, DateTime.UtcNow);
 
         var updated = await repository.UpdateAsync(id, document, cancellationToken);
 

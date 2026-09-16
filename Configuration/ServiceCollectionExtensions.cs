@@ -16,9 +16,15 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddAppServices(this IServiceCollection services)
     {
         services.Configure<ForwardedHeadersOptions>(ForwardedHeadersConfiguration.Configure);
+        services.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new EmptyStringDateTimeJsonConverter());
+        });
 
         services.AddOpenApi(options =>
         {
+            options.AddSchemaTransformer(DateTimeOpenApiSchemaTransformer.TransformAsync);
+
             options.AddDocumentTransformer((document, context, cancellationToken) =>
             {
                 document.Components ??= new OpenApiComponents();
@@ -60,6 +66,10 @@ public static class ServiceCollectionExtensions
         services.AddControllers(options =>
         {
             options.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer()));
+        })
+        .AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.Converters.Add(new EmptyStringDateTimeJsonConverter());
         });
         services.AddSingleton<MongoDbContext>();
         services.AddScoped(typeof(IRepository<>), typeof(MongoRepository<>));
