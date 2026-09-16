@@ -17,13 +17,23 @@ public class CvApiClient : IDisposable
         _httpClient.DefaultRequestHeaders.Add("X-MASTER-KEY", masterKey);
     }
 
-    public async Task CreateAsync<T>(
+    public async Task<MigrationLogResult> CreateAsync<T>(
         string route,
         T document,
         CancellationToken cancellationToken = default
     ) where T : class
     {
-        var response = await _httpClient.PostAsJsonAsync($"/api/{route}", document, cancellationToken);
+        var id = DocumentId.GetOrUnknown(document);
+        HttpResponseMessage response;
+
+        try
+        {
+            response = await _httpClient.PostAsJsonAsync($"/api/{route}", document, cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            return new MigrationLogResult(route, id, "ERROR", true, exception.Message);
+        }
 
         if (response.IsSuccessStatusCode)
         {
@@ -32,15 +42,28 @@ public class CvApiClient : IDisposable
             if (!string.IsNullOrWhiteSpace(result?.Id))
             {
                 DocumentId.Set(document, result.Id);
+                id = result.Id;
             }
 
-            return;
+            return new MigrationLogResult(route, id, result?.Status ?? "inserted", false);
         }
 
-        var id = DocumentId.GetOrUnknown(document);
+        if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+        {
+            var result = await response.Content.ReadFromJsonAsync<CreateResult>(cancellationToken);
+
+            return new MigrationLogResult(route, result?.Id ?? id, result?.Status ?? "ignored", false);
+        }
+
         var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
 
-        Console.WriteLine($"Failed {route}: {id}. Status: {(int)response.StatusCode}. {responseBody}");
+        return new MigrationLogResult(
+            route,
+            id,
+            "ERROR",
+            true,
+            $"HTTP {(int)response.StatusCode} {response.StatusCode}: {responseBody}"
+        );
     }
 
     public void Dispose()
@@ -48,5 +71,8 @@ public class CvApiClient : IDisposable
         _httpClient.Dispose();
     }
 
-    private record CreateResult([property: JsonPropertyName("id")] string Id);
+    private record CreateResult(
+        [property: JsonPropertyName("id")] string Id,
+        [property: JsonPropertyName("status")] string Status
+    );
 }

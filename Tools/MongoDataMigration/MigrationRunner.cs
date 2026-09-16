@@ -30,7 +30,27 @@ public class MigrationRunner
     {
         foreach (var document in documents)
         {
-            await _apiClient.CreateAsync(route, document, cancellationToken);
+            var result = await _apiClient.CreateAsync(route, document, cancellationToken);
+
+            WriteLog(result);
+        }
+    }
+
+    private static void WriteLog(MigrationLogResult result)
+    {
+        var label = result.Status switch
+        {
+            "inserted" => "OK",
+            "ignored" => "SKIP",
+            _ when result.IsError => "ERROR",
+            _ => result.Status.ToUpperInvariant()
+        };
+
+        Console.WriteLine($"{label} {result.Route}: {result.Id}");
+
+        if (result.IsError && !string.IsNullOrWhiteSpace(result.Details))
+        {
+            Console.WriteLine($"  {result.Details}");
         }
     }
 }
