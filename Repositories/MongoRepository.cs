@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using MongoDB.Driver;
 using cv_api.Data;
 
@@ -18,9 +19,43 @@ public class MongoRepository<T> : IRepository<T>
         return await _collection.Find(Builders<T>.Filter.Empty).ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyCollection<T>> FindAsync(
+        Expression<Func<T, bool>> predicate,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await _collection.Find(predicate).ToListAsync(cancellationToken);
+    }
+
+    public async Task<T?> FirstOrDefaultAsync(
+        Expression<Func<T, bool>> predicate,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await _collection.Find(predicate).FirstOrDefaultAsync(cancellationToken);
+    }
+
     public async Task<T?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         return await _collection.Find(BuildIdFilter(id)).FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyCollection<T>> GetByIdsAsync(
+        IReadOnlyCollection<string> ids,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (ids.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<T>.Filter.Or(
+            Builders<T>.Filter.In("_id", ids),
+            Builders<T>.Filter.In("Id", ids)
+        );
+
+        return await _collection.Find(filter).ToListAsync(cancellationToken);
     }
 
     public async Task<bool> ExistsByIdAsync(string id, CancellationToken cancellationToken = default)

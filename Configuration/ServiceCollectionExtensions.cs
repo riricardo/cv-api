@@ -4,6 +4,7 @@ using Microsoft.OpenApi;
 using cv_api.Data;
 using cv_api.Repositories;
 using cv_api.Auth;
+using cv_api.Queries;
 
 namespace cv_api.Configuration;
 
@@ -62,6 +63,7 @@ public static class ServiceCollectionExtensions
         });
         services.AddSingleton<MongoDbContext>();
         services.AddScoped(typeof(IRepository<>), typeof(MongoRepository<>));
+        services.AddScoped<QueryService>();
 
         return services;
     }

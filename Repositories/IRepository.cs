@@ -1,3 +1,5 @@
+using System.Linq.Expressions;
+
 namespace cv_api.Repositories;
 
 public interface IRepository<T>
@@ -5,7 +7,22 @@ public interface IRepository<T>
 {
     Task<IReadOnlyCollection<T>> GetAllAsync(CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyCollection<T>> FindAsync(
+        Expression<Func<T, bool>> predicate,
+        CancellationToken cancellationToken = default
+    );
+
+    Task<T?> FirstOrDefaultAsync(
+        Expression<Func<T, bool>> predicate,
+        CancellationToken cancellationToken = default
+    );
+
     Task<T?> GetByIdAsync(string id, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyCollection<T>> GetByIdsAsync(
+        IReadOnlyCollection<string> ids,
+        CancellationToken cancellationToken = default
+    );
 
     Task<bool> ExistsByIdAsync(string id, CancellationToken cancellationToken = default);
 
