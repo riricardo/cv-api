@@ -8,6 +8,11 @@ var app = builder.Build();
 
 app.UseForwardedHeaders();
 
+app.UseCors(policy => policy
+    .AllowAnyOrigin()
+    .AllowAnyMethod()
+    .AllowAnyHeader());
+
 app.UseHttpsRedirection();
 
 app.MapAppRoutes();

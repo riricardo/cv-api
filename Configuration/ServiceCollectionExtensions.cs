@@ -16,6 +16,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddAppServices(this IServiceCollection services)
     {
         services.Configure<ForwardedHeadersOptions>(ForwardedHeadersConfiguration.Configure);
+        services.AddCors();
         services.ConfigureHttpJsonOptions(options =>
         {
             options.SerializerOptions.Converters.Add(new EmptyStringDateTimeJsonConverter());
