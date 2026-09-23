@@ -124,6 +124,7 @@ public abstract class CrudControllerBase<T> : ControllerBase
     public async Task<IActionResult> Delete(
         string id,
         [FromServices] IRepository<T> repository,
+        [FromServices] DocumentDeletionService deletionService,
         CancellationToken cancellationToken
     )
     {
@@ -132,7 +133,24 @@ public abstract class CrudControllerBase<T> : ControllerBase
             return BadRequest(new { message = "Id must be a valid GUID." });
         }
 
+        if (!await repository.ExistsByIdAsync(id, cancellationToken))
+        {
+            return NotFound();
+        }
+
+        var conflict = await deletionService.GetConflictAsync<T>(id, cancellationToken);
+
+        if (conflict is not null)
+        {
+            return Conflict(conflict);
+        }
+
         var deleted = await repository.DeleteAsync(id, cancellationToken);
+
+        if (deleted)
+        {
+            await deletionService.CleanupReferencesAsync<T>(id, cancellationToken);
+        }
 
         return deleted ? NoContent() : NotFound();
     }

@@ -75,6 +75,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<MongoDbContext>();
         services.AddScoped(typeof(IRepository<>), typeof(MongoRepository<>));
         services.AddScoped<QueryService>();
+        services.AddScoped<DocumentDeletionService>();
 
         return services;
     }

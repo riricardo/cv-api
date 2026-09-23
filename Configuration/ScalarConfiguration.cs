@@ -7,7 +7,7 @@ public static class ScalarConfiguration
     public static void Configure(ScalarOptions options)
     {
         options.HideModels = true;
-        options.DocumentDownloadType = DocumentDownloadType.None;
+        options.DocumentDownloadType = DocumentDownloadType.Both;
         options.HideClientButton = true;
         options.HideDarkModeToggle = true;
         options.HideSearch = true;
